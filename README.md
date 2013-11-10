@@ -24,4 +24,9 @@ How people create Battle Scripts is still to be defined, but the following are o
   * An in-built script (similar to Robot Wars) using a bespoke language.
   * Plug-ins for other languages, such a Javascript, Perl, Python, Java
 
+Links:
+
+  * Vega Conflict   - https://www.kixeye.com/game/vegaconflict
+  * Lacuna Expanse  - http://lacunaexpanse.com/
+  * Robot Wars      - http://en.wikipedia.org/wiki/RobotWar
 
