@@ -30,3 +30,20 @@ Links:
   * Lacuna Expanse  - http://lacunaexpanse.com/
   * Robot Wars      - http://en.wikipedia.org/wiki/RobotWar
 
+Fleet to Fleet battles.
+
+Fleets from different empires will have many opportunities to interact.
+
+  * When attacking a 'base' you may have to defeat the fleets which are set to defend it.
+  * You may want to attack a fleet which is in transit, in order to steal it's cargo
+  * In Tournaments, your fleet may be competing in competition with empires of similar rank
+  * You may attack an AI player fleet
+
+In each of these interactions, if one or more of the empires who are competing is not on line
+then the auto scripts take control of the fleet. These auto scripts may either be pre-built
+one's (supplied by the server) or one's supplied by the empire.
+
+If either empire is on-line they will be informed of the battle and have the opportunity to
+'take command' of their fleet and control it manually.
+
+This then allows both one-on-one interaction between players and als
