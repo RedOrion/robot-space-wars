@@ -1,13 +1,9 @@
-package RSW::WS;
+package WS;
 
 use Moose;
 use Mojo::JSON;
 
 use namespace::autoclean;
-
-# This class provides basic functionality to add clients to a Web Socket
-# and to provide methods to send messages to individual clients or to
-# broadcast to all subscribed members
 
 has 'log' => (
     is          => 'rw',
@@ -57,8 +53,6 @@ sub broadcast {
     }
 }
 
-# Add a new subscriber to this room
-#
 sub add_client {
     my ($self, $connection, $client) = @_;
 
@@ -107,8 +101,6 @@ sub add_client {
     );
 }
 
-# When a client leaves the room or his connection is dropped
-#
 sub finish {
     my ($self, $client) = @_;
 
@@ -120,5 +112,6 @@ sub finish {
     delete $self->clients->{$client->id};
     $self->log->debug("Client [".$client->id."] disconnected.");
 }
+
 
 __PACKAGE__->meta->make_immutable;
