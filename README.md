@@ -236,6 +236,3 @@ a tournament at a later date. This will allow a player to see a battle that took
 whilst they were AFK. We may want to allow recording of the script commands (including
 any debug info) although there is no reason why the scripts can't record this for themselves.
 
-Test demonstration
-
-More changes
