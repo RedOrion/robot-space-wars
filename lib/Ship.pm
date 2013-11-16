@@ -52,36 +52,53 @@ has 'y' => (
     isa         => 'Int',
     default     => 0,
 );
-# Current direction of travel (in radians)
-has 'direction' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 0,
-);
-# Speed of ship
-has 'speed' => (
-    is          => 'rw',
-    isa         => 'Num',
-    default     => 100,
-);
 # Rotation rate of ship (radians per second)
 has 'rotation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 1,
 );
-
 # Current orientation of travel (in radians)
 has 'orientation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
 );
-# Max speed of ship
-has 'max_speed' => (
+# Forward thruster speed
+has 'thrust_forward' => (
     is          => 'rw',
     isa         => 'Num',
-    default     => 100,
+    default     => 0,
+);
+# Side thruster speed
+has 'thrust_sideway' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+# Reverse thruster speed
+has 'thrust_reverse' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+# Max forward speed of ship
+has 'max_thrust_forward' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 60,
+);
+# Max sideways speed of ship
+has 'max_thrust_sideways' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 10,
+);
+# Max reverse speed of ship
+has 'max_thrust_reverse' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 20,
 );
 # Max rotational speed (radians per second)
 has 'max_rotation' => (
@@ -90,7 +107,68 @@ has 'max_rotation' => (
     default     => 2,
 );
 
+# Limit the requested thrust in any direction
+# 
+for my $direction (qw(forward sideway reverse)) {
+    around "thrust_$direction" => sub {
+        my ($orig,$self,$speed) = @_;
 
+        return $self->$orig unless defined $speed;
+        
+        my $max_method = "max_thrust_$direction";
+        if ($speed > $self->$max_method) {
+            $speed = $self->$max_method;
+        }
+        if ($speed < 0) {
+            $speed = 0;
+        }
+        $self->$orig($speed);
+    };
+}
+# Limit the rotational speed
+#
+around "rotation" => sub {
+    my ($orig, $self, $speed) = @_;
+
+    return $self->$orig unless defined $speed;
+
+    if ($speed > $self->max_rotation) {
+        $speed = $self->max_rotation;
+    }
+    if ($speed < 0-$self->max_rotation) {
+        $speed = 0-$self->max_rotation;
+    }
+    $self->$orig($speed);
+};
+
+sub asin {
+    my ($val) = @_;
+    return atan2($val, sqrt(1 - $val * $val));
+}
+
+# The direction the ship goes is determined by several factors
+#  the 'orientation' of the ship, i.e. which direction it is facing
+#  the 'thrust_forward' this being the main engine of the ship
+#  the 'thrust_sideways' ships can use minor thrusters to move sideways
+#  the 'thrust_reverse' which counters the main engine if used at the same time
+#
+sub direction {
+    my ($self) = @_;
+
+    my $forward = $self->thrust_forward - $self->thrust_reverse;
+    my $delta_theta = asin($self->thrust_sideway);
+    my $direction = $self->orientation + $delta_theta;
+    return $direction;
+}
+
+# Speed is a vector of forward & sideway thrust
+#
+sub speed {
+    my ($self) = @_;
+
+    my $forward = $self->thrust_forward - $self->thrust_reverse;
+    my $speed = sqrt($forward * $forward + $self->thrust_sideway * $self->thrust_sideway);
+}
 
 # Create a hash representation of the object
 #
@@ -106,7 +184,6 @@ sub to_hash {
         speed           => $self->speed,
         rotation        => $self->rotation,
         orientation     => $self->orientation,
-        max_speed       => $self->max_speed,
         max_rotation    => $self->max_rotation,
         name            => $self->name,
         type            => $self->type,

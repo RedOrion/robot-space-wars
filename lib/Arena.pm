@@ -63,15 +63,14 @@ sub BUILD {
         my $direction   = rand(PI * 2);
 
         my $ship = Ship->new({
-            id          => $i,
-            owner_id    => $i % 2,
-            type        => 'ship',
-            x           => $start_x,
-            y           => $start_y,
-            speed       => $speed,
-            direction   => $direction,
-            orientation => $direction,
-            rotation    => 0,
+            id              => $i,
+            owner_id        => $i % 2,
+            type            => 'ship',
+            x               => $start_x,
+            y               => $start_y,
+            thrust_forward  => $speed,
+            orientation     => $direction,
+            rotation        => 0,
         });
         push @ships, $ship;
     }
