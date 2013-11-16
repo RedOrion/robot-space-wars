@@ -7,6 +7,8 @@ use Ship;
 use namespace::autoclean;
 use Data::Dumper;
 
+use constant PI => 3.14159;
+
 # An array of all the ships in the Arena
 #
 has 'ships' => (
@@ -18,7 +20,7 @@ has 'ships' => (
 #
 has 'width' => (
     is      => 'rw',
-    isa     => 'Int',e
+    isa     => 'Int',
     default => 1000,
 );
 # The height of the pit (in pixels)
@@ -55,86 +57,65 @@ sub BUILD {
 
     my @ships;
     for (my $i=0; $i < 4; $i++) {
-        my $radius = int(rand(10)+10);
-        # somewhere in the centre
-        my $start_x = rand($self->width - 400) + 200;
-        my $start_y = rand($self->height - 400) + 200;
-        my $duration = rand(30000) + 15000;              # 5 to 10 seconds
-        my $end_x = rand($self->width * 3) - $self->width;
-        $end_x = $radius if ($end_x < $radius);
-        $end_x = $self->width - $radius if $end_x > ($self->width - $radius);
-        my $end_y = rand($self->height * 3) - $self->height;
-        $end_y = $radius if ($end_y < $radius);
-        $end_y = $self->height - $radius if $end_y > ($self->width - $radius);
+        my $start_x = int(rand(400) + 200);
+        my $start_y = int(rand(400) + 200);
+        my $speed   = rand(50) + 50;
+        my $direction   = rand(PI * 2);
 
-        my $ball = Ship->new({
+        my $ship = Ship->new({
             id          => $i,
-            start_time  => 1,
-            end_time    => int($duration),
-            start_x     => int($start_x),
-            start_y     => int($start_y),
-            end_x       => int($end_x),
-            end_y       => int($end_y),
+            owner_id    => $i % 2,
+            type        => 'ship',
+            x           => $start_x,
+            y           => $start_y,
+            speed       => $speed,
+            direction   => $direction,
+            orientation => $direction,
+            rotation    => 0,
         });
-        print STDERR "### $i ###\n";
-        push @balls, $ball;
+        push @ships, $ship;
     }
-    $self->balls(\@balls);
-    # extend the time up to 1 second ahead
-    print STDERR "#########\n". Dumper($self->balls);
+    $self->ships(\@ships);
     $self->update($self->duration);
 }
 
-# Update the pit by a number of seconds
-#   Anything that finishes before the end time is re-computed
-#   anything that finishes before the start time can be deleted
+# Update the pit by a number of milliseconds
 sub update {
     my ($self, $duration) = @_;
 
-    # As a test, we just bounce the ball back to it's start, rather than compute collisions.
-    my @newballs;
-    my $start_time;
-    my $end_time;
     if ($self->start_time < 0) {
         # then this is the first time.
-        $start_time = 0;
-        $end_time   = $start_time + $duration;
+        $self->start_time(0);
+        $self->end_time($duration);
     }
     else {
-        $start_time = $self->start_time + $duration;
-        $end_time   = $self->end_time + $duration;
+        $self->start_time($self->start_time + $duration);
+        $self->end_time($self->end_time + $duration);
     }
-    print STDERR "FROM $start_time TO $end_time\n";
-    BALL:
-    foreach my $ball (@{$self->balls}) {
-        print STDERR "BALL ".$ball->start_time." to ".$ball->end_time." ";
-        if ($ball->end_time <= $start_time) {
-            print STDERR " ERASED\n";
-            next BALL;
+    # this is only temporary until we have some 'external' control programs.
+    # 'drukards walk'
+    # 
+    foreach my $ship (@{$self->ships}) {
+        my $new_direction;
+
+        if ($ship->x > $self->width - 100) {
+            $new_direction = rand(PI) + PI / 2;
         }
-       
-        my $ball_duration = $ball->end_time - $ball->start_time;
-        print STDERR "\n";
-    
-        while ($ball->end_time <= $end_time) {
-            push @newballs, $ball;
-            my $new_ball = Ball::Quantum->new({
-                id          => $ball->id,
-                start_time  => int($ball->end_time),
-                end_time    => int($ball->end_time + $ball_duration),
-                start_x     => int($ball->end_x),
-                start_y     => int($ball->end_y),
-                end_x       => int($ball->start_x),
-                end_y       => int($ball->start_y),
-            });
-            $ball = $new_ball;
-            print STDERR "ADD  ".$ball->start_time." to ".$ball->end_time."\n";
+        if ($ship->x < 100) {
+            $new_direction = rand(PI / 2);
         }
-        push @newballs, $ball;
+        if ($ship->y > $self->height - 100) {
+            $new_direction = rand(PI);
+        }
+        if ($ship->y < 100) {
+            $new_direction = rand(PI) + PI;
+        }
+        if (not $new_direction) {
+            $new_direction = rand(PI * 2);
+        }
+        $ship->direction($new_direction);
+        $ship->orientation($new_direction);
     }
-    $self->start_time($start_time);
-    $self->end_time($end_time);
-    $self->balls(\@newballs);
 }
 
 
@@ -143,15 +124,15 @@ sub update {
 sub to_hash {
     my ($self) = @_;
 
-    my @balls_quantum_ref;
-    foreach my $ball_quantum (@{$self->balls}) {
-        push @balls_quantum_ref, $ball_quantum->to_hash
+    my @ships_ref;
+    foreach my $ship (@{$self->ships}) {
+        push @ships_ref, $ship->to_hash;
     }
     return {
         width   => $self->width,
-                height  => $self->height,
-                time    => $self->start_time,
-        balls   => \@balls_quantum_ref,
+        height  => $self->height,
+        time    => $self->start_time,
+        ships   => \@ships_ref,
     };
 }
 

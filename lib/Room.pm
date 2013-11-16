@@ -15,10 +15,10 @@ has 'subscribers' => (
     isa         => 'Maybe[HashRef[Client]]',
     default     => sub { {} },
 );
-# Room has a ballpit
-has 'ball_pit' => (
+# Room has an Arena 
+has 'arena' => (
     is          => 'rw',
-    isa         => 'Ball::Pit',
+    isa         => 'Arena',
     required    => 1,
 );
 
@@ -26,7 +26,7 @@ has 'ball_pit' => (
 sub update_state {
     my ($self, $duration) = @_;
 
-    $self->ball_pit->update($duration);
+    $self->arena->update($duration);
 }
 
 # Unsubscribe a client from this room
@@ -78,7 +78,7 @@ sub to_hash {
 
     my $hash = {
         room    => $self->id,
-        ballpit => $self->ball_pit->to_hash,
+        arena   => $self->arena->to_hash,
     };
     return $hash;
 }

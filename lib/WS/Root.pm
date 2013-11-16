@@ -4,7 +4,7 @@ use Moose;
 use Mojo::IOLoop;
 use Data::Dumper;
 use Room;
-use Ball::Pit;
+use Arena;
 
 use namespace::autoclean;
 
@@ -19,7 +19,7 @@ has 'rooms' => (
 sub BUILD {
     my ($self) = @_;
 
-    # every second, update the room states (compute the future state of the balls)
+    # every second, update the room states (compute the future state of the ships)
     #
     Mojo::IOLoop->singleton->recurring(2 => sub {
         foreach my $room_id (keys %{$self->rooms}) {
@@ -33,8 +33,9 @@ sub BUILD {
             #
             my $json = $self->prepare_json({
                 type    => 'room_data',
-                data    => $room->to_hash,
+                content => $room->to_hash,
             });
+            print STDERR "OUTPUT: $json\n";
             $room->for_all_subscribers( sub {
                 my $client = shift;
                 $client->send($json);
@@ -57,12 +58,12 @@ sub room {
     my $room_number = $data->{number};
     my $room = $self->rooms->{$room_number};
     if (not defined $room) {
-        # Create a 'room' containing a ballpit with balls
+        # Create a 'room' containing an Arena 
         #
-        my $ball_pit = Ball::Pit->new;
+        my $arena = Arena->new;
         $room = Room->new({
             id          => $room_number,
-            ball_pit    => $ball_pit,
+            arena       => $arena,
         });
         $self->rooms->{$room_number} = $room;
     }

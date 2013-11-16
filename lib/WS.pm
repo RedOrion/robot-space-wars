@@ -22,7 +22,7 @@ sub prepare_json {
     
     my $msg = {
         type    => $args->{type},
-        data    => $args->{data},
+        content => $args->{content},
     };
     return Mojo::JSON->new->encode($msg);
 }
@@ -62,7 +62,7 @@ sub add_client {
 
     $self->broadcast({
         type    => 'new_client',
-        data    => $client->as_hash,
+        content => $client->as_hash,
         exclude => $client,
     });
 
@@ -89,7 +89,7 @@ sub add_client {
                 return;
             }
             # Call the 'method' specifed in the 'type'
-            $self->$type($client, $msg->{data});
+            $self->$type($client, $msg->{content});
         }
     );
 
@@ -106,7 +106,7 @@ sub finish {
 
     $self->broadcast({
         type    => 'old_client',
-        data    => $client->as_hash,
+        content => $client->as_hash,
         exclude => $client,
     });
     delete $self->clients->{$client->id};

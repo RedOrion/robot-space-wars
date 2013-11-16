@@ -55,7 +55,7 @@
                 ws.onmessage = function(e) {
                     var data = $.evalJSON(e.data);
                     var type = data.type;
-                    var content = data.data;
+                    var content = data.content;
                     //console.log('Message received');
 //                    $('#debug').html(e.data);
 
@@ -71,28 +71,30 @@
                         delete self.players[content.id];
                     }
                     else if (type == 'rooms') {
-                        $('#top').html("room data = ["+content[$('#room').val()]+"]");
+                        $('#top').html("room content = ["+content[$('#room').val()]+"]");
                     }
                     else if (type == 'room_data') {
-                        var c_ball_pit = content.ballpit;
+                        var c_arena = content.arena;
                         var date = new Date();
-                        init_t = date.getTime() - c_ball_pit.time;
+                        init_t = date.getTime() - c_arena.time;
 
-                        var c_balls = c_ball_pit.balls;
-                        var balls = new Array();
-                        for (var i=0; i<c_balls.length; i++) {
-                            var c_ball = c_balls[i];
-                            balls[i] = new Ball({
-                                start_x : c_ball.start_x,
-                                start_y : c_ball.start_y,
-                                start_t : c_ball.start_time,
-                                end_x   : c_ball.end_x,
-                                end_y   : c_ball.end_y,
-                                end_t   : c_ball.end_time,
-                                init_t  : init_t
+                        var c_ships = c_arena.ships;
+                        var ships = new Array();
+                        for (var i=0; i<c_ships.length; i++) {
+                            var c_ship = c_ships[i];
+                            ships[i] = new Ship({
+                                x           : c_ship.x,
+                                y           : c_ship.y,
+                                direction   : c_ship.direction,
+                                speed       : c_ship.speed,
+                                rotation    : c_ship.rotation,
+                                orientation : c_ship.orientation,
+                                status      : c_ship.status,
+                                health      : c_ship.health,
+                                init_t      : init_t
                             });
                         }
-                        bouncer.balls = balls;
+                        arena.ships = ships;
                     }
                 };
 
@@ -103,7 +105,7 @@
 
                 $('#room').keyup(function() {
         //            $('#debug').html('room change');
-                    ws.send($.toJSON({"type" : "room", "data" : { "number" : $('#room').val() } } ));
+                    ws.send($.toJSON({"type" : "room", "content" : { "number" : $('#room').val() } } ));
                 });
 
             });

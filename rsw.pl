@@ -95,29 +95,29 @@ $(document).ready(function() {
     imageObj.onLoad = function() {
 //        context.drawImage(imageObj, 50,50);
     };
-    imageObj.src = 'http://127.0.0.1:3000/sp_ship.png';
+    imageObj.src = 'http://git.icydee.com:3000/sp_ship.png';
     bgImage = new Image();
-    bgImage.src = 'http://127.0.0.1:3000/starfield.png';
+    bgImage.src = 'http://git.icydee.com:3000/starfield.png';
     bgImage.onLoad = function() {};
 
-    bouncer = new Bouncer({
+    arena = new Arena({
         width   : 1000,
         height  : 1000,
-        balls   : new Array()
+        ships   : new Array()
     });
-    bouncer.render();
+    arena.render();
 });
 
 
 
 var context;
-var bouncer;
+var arena;
 var imageObj;
 var bgImage;
 var date = new Date();
 var init_t = -1;
 
-function Ball(args) {
+function Ship(args) {
     this.start_x = args.start_x;
     this.start_y = args.start_y;
     this.start_t = args.start_t;
@@ -151,8 +151,8 @@ function Ball(args) {
 };
 
 
-function Bouncer(args) {
-    this.balls  = args.balls;
+function Arena(args) {
+    this.ships  = args.ships;
     this.width  = args.width;
     this.height = args.height;
     var self = this;
@@ -167,8 +167,8 @@ function Bouncer(args) {
         context.beginPath();
         context.fillStyle="#000066";
 
-        for (var i=0; i<self.balls.length; i++) {
-            self.balls[i].render();
+        for (var i=0; i<self.ships.length; i++) {
+            self.ships[i].render();
         }
         requestAnimationFrame(self.render);
     }
