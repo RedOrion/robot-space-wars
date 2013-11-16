@@ -76,7 +76,7 @@
                     else if (type == 'room_data') {
                         var c_arena = content.arena;
                         var date = new Date();
-                        init_t = date.getTime() - c_arena.time;
+                        init_t = date.getTime();
 
                         var c_ships = c_arena.ships;
                         var ships = new Array();

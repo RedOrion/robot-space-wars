@@ -16,14 +16,14 @@ has 'ships' => (
     isa     => 'ArrayRef[Ship]',
     default => sub { [] },
 );
-# The width of the pit (in pixels)
+# The width of the arena (in pixels)
 #
 has 'width' => (
     is      => 'rw',
     isa     => 'Int',
     default => 1000,
 );
-# The height of the pit (in pixels)
+# The height of the arena (in pixels)
 #
 has 'height' => (
     is      => 'rw',
@@ -79,7 +79,7 @@ sub BUILD {
     $self->update($self->duration);
 }
 
-# Update the pit by a number of milliseconds
+# Update the arena by a number of milliseconds
 sub update {
     my ($self, $duration) = @_;
 
@@ -113,6 +113,13 @@ sub update {
         if (not $new_direction) {
             $new_direction = rand(PI * 2);
         }
+        # Move the required distance
+        my $distance = $ship->speed * $duration / 1000;
+        my $delta_x = $distance * cos($ship->direction);
+        my $delta_y = $distance * sin($ship->direction);
+        $ship->x(int($ship->x + $delta_x));
+        $ship->y(int($ship->y - $delta_y));
+
         $ship->direction($new_direction);
         $ship->orientation($new_direction);
     }

@@ -118,35 +118,30 @@ var date = new Date();
 var init_t = -1;
 
 function Ship(args) {
-    this.start_x = args.start_x;
-    this.start_y = args.start_y;
-    this.start_t = args.start_t;
-    this.end_x   = args.end_x;
-    this.end_y   = args.end_y;
-    this.end_t   = args.end_t;
-    this.init_t  = args.init_t;
+    this.x              = args.x,
+    this.y              = args.y,
+    this.direction      = args.direction,
+    this.speed          = args.speed,
+    this.rotation       = args.rotation,
+    this.orientation    = args.orientation,
+    this.status         = args.status,
+    this.health         = args.health,
+    this.init_t         = args.init_t
     var self = this;
 
     this.render=function() {
         var date = new Date();
-        var now_t = date.getTime() - self.init_t;
-        if (now_t < self.start_t || now_t > self.end_t) {
-            // Object not in scope
-        }
-        else {
-            var prop = (now_t - self.start_t) / (self.end_t - self.start_t);
-            var x = Math.round(self.start_x + (self.end_x - self.start_x) * prop);
-            var y = Math.round(self.start_y + (self.end_y - self.start_y) * prop);
-            var deltaY = self.end_y - self.start_y;
-            var deltaX = self.end_x - self.start_x
+        var now_t = date.getTime();
+        var duration = now_t - this.init_t;
+        var distance = this.speed * duration / 1000;
+        var delta_x = distance * Math.cos(this.direction);
+        var delta_y = distance * Math.sin(this.direction);
 
-            var rotate = Math.atan2(deltaY, deltaX) + Math.PI /2;
-            context.save();
-            context.translate(x,y);
-            context.rotate(rotate);
-            context.drawImage(imageObj, -25, -35);
-            context.restore();
-        }
+        context.save();
+        context.translate(this.x + delta_x, this.y - delta_y);
+        context.rotate(0 - this.orientation);
+        context.drawImage(imageObj, -35, -25);
+        context.restore();
     }
 };
 
@@ -155,12 +150,10 @@ function Arena(args) {
     this.ships  = args.ships;
     this.width  = args.width;
     this.height = args.height;
+    this.time   = args.time;
     var self = this;
 
     this.render=function() {
-        //var date = new Date();
-        //var now_t = date.getTime() - init_t;
-
         context.clearRect(0, 0, self.width, self.height);
         context.drawImage(bgImage,0,0);
 
