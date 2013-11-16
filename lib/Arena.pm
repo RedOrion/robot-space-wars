@@ -56,10 +56,10 @@ sub BUILD {
     my ($self) = @_;
 
     my @ships;
-    for (my $i=0; $i < 4; $i++) {
+    for (my $i=0; $i < 100; $i++) {
         my $start_x = int(rand(400) + 200);
         my $start_y = int(rand(400) + 200);
-        my $speed   = rand(50) + 50;
+        my $speed   = 30;
         my $direction   = rand(PI * 2);
 
         my $ship = Ship->new({
@@ -95,32 +95,52 @@ sub update {
     # 'drukards walk'
     # 
     foreach my $ship (@{$self->ships}) {
-        my $new_direction;
 
-        if ($ship->x > $self->width - 100) {
-            $new_direction = rand(PI) + PI / 2;
-        }
-        if ($ship->x < 100) {
-            $new_direction = rand(PI / 2);
-        }
-        if ($ship->y > $self->height - 100) {
-            $new_direction = rand(PI);
-        }
-        if ($ship->y < 100) {
-            $new_direction = rand(PI) + PI;
-        }
-        if (not $new_direction) {
-            $new_direction = rand(PI * 2);
-        }
+       
         # Move the required distance
         my $distance = $ship->speed * $duration / 1000;
         my $delta_x = $distance * cos($ship->direction);
         my $delta_y = $distance * sin($ship->direction);
         $ship->x(int($ship->x + $delta_x));
-        $ship->y(int($ship->y - $delta_y));
+        $ship->y(int($ship->y + $delta_y));
 
-        $ship->direction($new_direction);
-        $ship->orientation($new_direction);
+        my $on_edge = 0;
+        if ($ship->x > $self->width - 100 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
+            $on_edge = 1;
+        }
+        if ($ship->x < 100 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
+            $on_edge = 1;
+        }
+        if ($ship->y > $self->height - 100 and $ship->orientation < PI) {
+            $on_edge = 1;
+        }
+        if ($ship->y < 100 and $ship->orientation > PI) {
+            $on_edge = 1;
+        }
+        if ($on_edge) {
+            $ship->thrust_forward(2);
+        }
+        else {
+            $ship->thrust_forward($ship->max_thrust_forward);
+        }
+
+        my $delta_rotation;
+        if ($on_edge) {
+            $delta_rotation = PI/8;
+        }
+        else {
+            $delta_rotation = rand(PI/4) - PI/8;
+        }
+        $ship->orientation($ship->orientation + $delta_rotation);
+#        print STDERR "### ON_EDGE=$on_edge speed=[".$ship->speed."]\n";
+
+        # Safety net
+        $ship->x($self->width) if $ship->x > $self->width;
+        $ship->x(0) if $ship->x < 0;
+        $ship->y($self->height) if $ship->y > $self->height;
+        $ship->y(0) if $ship->y < 0;
+
+
     }
 }
 

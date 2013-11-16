@@ -136,9 +136,10 @@ function Ship(args) {
         var distance = this.speed * duration / 1000;
         var delta_x = distance * Math.cos(this.direction);
         var delta_y = distance * Math.sin(this.direction);
+        var new_y = arena.height - (this.y + delta_y);
 
         context.save();
-        context.translate(this.x + delta_x, this.y - delta_y);
+        context.translate(this.x + delta_x, new_y);
         context.rotate(0 - this.orientation);
         context.drawImage(imageObj, -35, -25);
         context.restore();

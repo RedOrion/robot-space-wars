@@ -5,6 +5,8 @@ use namespace::autoclean;
 
 # This defines the basic characteristics of a ship
 
+use constant PI => 3.14159;
+
 # The unique ID of the ship
 has 'id' => (
     is          => 'rw',
@@ -139,6 +141,22 @@ around "rotation" => sub {
         $speed = 0-$self->max_rotation;
     }
     $self->$orig($speed);
+};
+
+# Normalise the orientation
+#
+around 'orientation' => sub {
+    my ($orig, $self, $angle) = @_;
+
+    return $self->$orig unless defined $angle;
+
+    while ($angle > 2*PI) {
+        $angle -= 2*PI;
+    }
+    while ($angle < 0) {
+        $angle += 2*PI;
+    }
+    $self->$orig($angle);
 };
 
 sub asin {
