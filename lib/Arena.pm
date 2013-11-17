@@ -69,7 +69,7 @@ sub BUILD {
     for (my $i=0; $i < $self->max_ships; $i++) {
         my $start_x = int(rand(400) + 200);
         my $start_y = int(rand(400) + 200);
-        my $speed   = 300;
+        my $speed   = 30;
         my $direction   = rand(PI * 2);
 
         my $ship = Ship->new({
@@ -79,7 +79,6 @@ sub BUILD {
             x               => $start_x,
             y               => $start_y,
             thrust_forward  => $speed,
-            max_thrust_forward  => 300,
             orientation     => $direction,
             rotation        => 0,
         });
@@ -174,7 +173,7 @@ sub update {
             $delta_rotation = $ship->id % 2 ? PI/8 : 0-PI/8;
         }
         else {
-            $delta_rotation = rand(PI/4) - PI/8;
+            $delta_rotation = rand(PI/2) - PI/4;
         }
         my $end_orientation = $ship->orientation + $delta_rotation;
 
