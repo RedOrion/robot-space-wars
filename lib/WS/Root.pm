@@ -62,6 +62,7 @@ sub room {
         #
         my $arena = Arena->new({
             duration    => 500,
+            max_ships   => $room_number,
         });
         $room = Room->new({
             id          => $room_number,

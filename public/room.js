@@ -86,19 +86,33 @@
                         var ships = new Array();
                         for (var i=0; i<c_ships.length; i++) {
                             var c_ship = c_ships[i];
-                            ships[i] = new Ship({
-                                x           : c_ship.x,
-                                y           : c_ship.y,
-                                direction   : c_ship.direction,
-                                speed       : c_ship.speed,
-                                rotation    : c_ship.rotation,
-                                orientation : c_ship.orientation,
-                                status      : c_ship.status,
-                                health      : c_ship.health,
-                                init_t      : init_t
-                            });
+
+                            if ('undefined' === typeof arena.ships[c_ship.id]) {
+                                arena.ships[c_ship.id] = new Ship({
+                                    x           : c_ship.x,
+                                    y           : c_ship.y,
+                                    direction   : c_ship.direction,
+                                    speed       : 0,
+                                    rotation    : c_ship.rotation,
+                                    orientation : c_ship.orientation,
+                                    status      : c_ship.status,
+                                    health      : c_ship.health,
+                                    init_t      : init_t
+                                });
+                            }
+                            else {
+                                var ship = arena.ships[c_ship.id];
+                                ship.x          = c_ship.x;
+                                ship.y          = c_ship.y;
+                                ship.direction  = c_ship.direction;
+                                ship.speed      = c_ship.speed;
+                                ship.rotation   = c_ship.rotation;
+                                ship.orientation= c_ship.orientation;
+                                ship.status     = c_ship.status;
+                                ship.health     = c_ship.health;
+                                ship.init_t     = init_t;
+                            }
                         }
-                        arena.ships = ships;
                     }
                 };
 

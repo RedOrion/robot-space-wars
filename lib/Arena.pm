@@ -16,6 +16,13 @@ has 'ships' => (
     isa     => 'ArrayRef[Ship]',
     default => sub { [] },
 );
+# Number of ships in the Arena (temp)
+#
+has 'max_ships' => (
+    is      => 'rw',
+    isa     => 'Int',
+    default => 4,
+);
 # The width of the arena (in pixels)
 #
 has 'width' => (
@@ -55,8 +62,11 @@ has 'duration' => (
 sub BUILD {
     my ($self) = @_;
 
+    my $max_ships = $self->max_ships;
+    $max_ships = 100 if $max_ships > 100;
+
     my @ships;
-    for (my $i=0; $i < 1; $i++) {
+    for (my $i=0; $i < $self->max_ships; $i++) {
         my $start_x = int(rand(400) + 200);
         my $start_y = int(rand(400) + 200);
         my $speed   = 30;
@@ -107,7 +117,7 @@ sub update {
     # the next tick.
     #
     # The competing programs will only know the predicted thrust and rotation for
-    # the opposing fleet, not what will happen during the tick (e.g. full thrust to
+    # the opposing fleet, not what will happen during the tick (e.g. full forward to
     # full reverse) so the predictions will often be 'wrong'.
     #
     # For this reason we can't use the predicted value to display the game in the
