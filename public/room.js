@@ -79,6 +79,10 @@
                         init_t = date.getTime();
 
                         var c_ships = c_arena.ships;
+                        // first time in.
+                        if ('undefined' === typeof arena.ships) {
+                            arena.ships = new Array();
+                        }
                         var ships = new Array();
                         for (var i=0; i<c_ships.length; i++) {
                             var c_ship = c_ships[i];

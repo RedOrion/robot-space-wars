@@ -56,7 +56,7 @@ sub BUILD {
     my ($self) = @_;
 
     my @ships;
-    for (my $i=0; $i < 100; $i++) {
+    for (my $i=0; $i < 1; $i++) {
         my $start_x = int(rand(400) + 200);
         my $start_y = int(rand(400) + 200);
         my $speed   = 30;
@@ -72,6 +72,7 @@ sub BUILD {
             orientation     => $direction,
             rotation        => 0,
         });
+        print STDERR "CREATE SHIP: [".$ship->x."][".$ship->y."][".$ship->orientation."]\n";
         push @ships, $ship;
     }
     $self->ships(\@ships);
@@ -82,46 +83,79 @@ sub BUILD {
 sub update {
     my ($self, $duration) = @_;
 
+    print STDERR "DURATION: $duration\n";
+    my $duration_millisec = $duration * 100;
     if ($self->start_time < 0) {
         # then this is the first time.
         $self->start_time(0);
-        $self->end_time($duration);
+        $self->end_time($duration_millisec);
     }
     else {
-        $self->start_time($self->start_time + $duration);
-        $self->end_time($self->end_time + $duration);
+        $self->start_time($self->start_time + $duration_millisec);
+        $self->end_time($self->end_time + $duration_millisec);
     }
     # this is only temporary until we have some 'external' control programs.
     # 'drukards walk'
+    # This is equivalent to what the players program will request
+    # Which means only the thrust and rotation can be set here
+    #
+    # In practice, on each tick, we give the current actual position of all
+    # ships and the thrust and rotation (as we currently know it)
+    #
+    # During the next tick, each ship's new thrust and rotation will be received
+    # from each player and this will be used to compute the actual position for
+    # the next tick.
+    #
+    # The competing programs will only know the predicted thrust and rotation for
+    # the opposing fleet, not what will happen during the tick (e.g. full thrust to
+    # full reverse) so the predictions will often be 'wrong'.
+    #
+    # For this reason we can't use the predicted value to display the game in the
+    # browser, we have to use the actual values. This means the browser display
+    # has to lag by 1 tick behind the actual game play.
+    #
+    # We will have to look at what this means when players are playing 'manually'.
+    # 
+    #
+    # So, as mentioned above. This code currently assumes that the thrust and rotation
+    # were received during the previous tick period, only to be acted upon now 'as if'
+    # the command were received at the start of the previous tick period.
     # 
     foreach my $ship (@{$self->ships}) {
+        my ($rotation, $thrust_forward, $thrust_sideway, $thrust_reverse) = (0,0,0,0);
 
-       
+        my $start_x = $ship->x;
+        my $start_y = $ship->y;
+        my $end_x = $start_x;
+        my $end_y = $start_y;
+        
+        my $start_orientation = $ship->orientation;
+
         # Move the required distance
-        my $distance = $ship->speed * $duration / 1000;
+        my $distance = $ship->speed * $duration_millisec / 1000;
         my $delta_x = $distance * cos($ship->direction);
         my $delta_y = $distance * sin($ship->direction);
-        $ship->x(int($ship->x + $delta_x));
-        $ship->y(int($ship->y + $delta_y));
+        $end_x = int($start_x + $delta_x);
+        $end_y = int($start_y + $delta_y);
 
         my $on_edge = 0;
-        if ($ship->x > $self->width - 100 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
+        if ($end_x > $self->width - 100 and ($ship->orientation < PI/2 or $ship->orientation > 3*PI/2)) {
             $on_edge = 1;
         }
-        if ($ship->x < 100 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
+        if ($end_x < 100 and $ship->orientation > PI/2 and $ship->orientation < 3*PI/2) {
             $on_edge = 1;
         }
-        if ($ship->y > $self->height - 100 and $ship->orientation < PI) {
+        if ($end_y > $self->height - 100 and $ship->orientation < PI) {
             $on_edge = 1;
         }
-        if ($ship->y < 100 and $ship->orientation > PI) {
+        if ($end_y < 100 and $ship->orientation > PI) {
             $on_edge = 1;
         }
         if ($on_edge) {
-            $ship->thrust_forward(2);
+            $thrust_forward = 0;
         }
         else {
-            $ship->thrust_forward($ship->max_thrust_forward);
+            $thrust_forward = $ship->max_thrust_forward;
         }
 
         my $delta_rotation;
@@ -131,16 +165,50 @@ sub update {
         else {
             $delta_rotation = rand(PI/4) - PI/8;
         }
-        $ship->orientation($ship->orientation + $delta_rotation);
-#        print STDERR "### ON_EDGE=$on_edge speed=[".$ship->speed."]\n";
+        my $end_orientation = $ship->orientation + $delta_rotation;
 
+        $rotation = ($end_orientation - $start_orientation) / ($duration_millisec / 1000);
+
+        # Set the values
+        $ship->rotation($rotation);
+        $ship->thrust_forward($thrust_forward);
+        $ship->thrust_reverse($thrust_reverse);
+        $ship->thrust_sideway($thrust_sideway);
+    }
+    # This is where the server interprets these player request and adjusts them
+    # to ensure they do not break game rules
+    #
+    foreach my $ship (@{$self->ships}) {
         # Safety net
-        $ship->x($self->width) if $ship->x > $self->width;
-        $ship->x(0) if $ship->x < 0;
-        $ship->y($self->height) if $ship->y > $self->height;
-        $ship->y(0) if $ship->y < 0;
+        $ship->thrust_forward($ship->max_thrust_forward) if $ship->thrust_forward > $ship->max_thrust_forward;
+        $ship->thrust_sideway($ship->max_thrust_sideway) if $ship->thrust_sideway > $ship->max_thrust_sideway;
+        $ship->thrust_reverse($ship->max_thrust_reverse) if $ship->thrust_reverse > $ship->max_thrust_reverse;
+        $ship->rotation($ship->max_rotation) if $ship->rotation > $ship->max_rotation;
+        $ship->rotation(0-$ship->max_rotation) if $ship->rotation < 0-$ship->max_rotation;
 
+        # Calculate the final position based on thrust and direction
+        my $distance = $ship->speed * $duration_millisec / 1000;
+        my $delta_x = $distance * cos($ship->direction);
+        my $delta_y = $distance * sin($ship->direction);
+        my $end_x = int($ship->x + $delta_x);
+        my $end_y = int($ship->y + $delta_y);
 
+        # check for limits.
+        $end_x = $self->width   if $end_x > $self->width;
+        $end_x = 0              if $end_x < 0;
+        $end_y = $self->height  if $end_y > $self->height;
+        $end_y = 0              if $end_y < 0;
+
+        # Check for collisions, in which case come to an early halt
+
+        # Check for hits by missiles. In which case cause damage
+
+        $ship->x($end_x);
+        $ship->y($end_y);
+
+        # angle of rotation over the tick.
+        my $angle_rad = $ship->rotation * $duration_millisec / 1000;
+        $ship->orientation($ship->orientation+$angle_rad);
     }
 }
 

@@ -48,8 +48,20 @@ has 'x' => (
     isa         => 'Int',
     default     => 0,
 );
+# target X co-ordinate (at end of tick)
+has 'target_x' => (
+    is          => 'rw',
+    isa         => 'Int',
+    default     => 0,
+);
 # Current Y co-ordinate
 has 'y' => (
+    is          => 'rw',
+    isa         => 'Int',
+    default     => 0,
+);
+# target Y co-ordinate (at end of tick)
+has 'target_y' => (
     is          => 'rw',
     isa         => 'Int',
     default     => 0,
@@ -62,6 +74,12 @@ has 'rotation' => (
 );
 # Current orientation of travel (in radians)
 has 'orientation' => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => 0,
+);
+# Target orientation of travel (in radians) (at end of tick)
+has 'target_orientation' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 0,
@@ -90,8 +108,8 @@ has 'max_thrust_forward' => (
     isa         => 'Num',
     default     => 60,
 );
-# Max sideways speed of ship
-has 'max_thrust_sideways' => (
+# Max sideway speed of ship
+has 'max_thrust_sideway' => (
     is          => 'rw',
     isa         => 'Num',
     default     => 10,
@@ -167,7 +185,7 @@ sub asin {
 # The direction the ship goes is determined by several factors
 #  the 'orientation' of the ship, i.e. which direction it is facing
 #  the 'thrust_forward' this being the main engine of the ship
-#  the 'thrust_sideways' ships can use minor thrusters to move sideways
+#  the 'thrust_sideway' ships can use minor thrusters to move sideway
 #  the 'thrust_reverse' which counters the main engine if used at the same time
 #
 sub direction {
