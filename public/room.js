@@ -90,18 +90,24 @@
                             if ('undefined' === typeof arena.ships[c_ship.id]) {
                                 arena.ships[c_ship.id] = new Ship({
                                     x           : c_ship.x,
+                                    prev_x      : c_ship.x,
                                     y           : c_ship.y,
+                                    prev_y      : c_ship.y,
                                     direction   : c_ship.direction,
                                     speed       : 0,
                                     rotation    : c_ship.rotation,
                                     orientation : c_ship.orientation,
                                     status      : c_ship.status,
                                     health      : c_ship.health,
-                                    init_t      : init_t
+                                    init_t      : init_t,
+                                    prev_t      : init_t
                                 });
                             }
                             else {
                                 var ship = arena.ships[c_ship.id];
+                                ship.prev_x     = ship.x;
+                                ship.prev_y     = ship.y;
+                                ship.prev_t     = ship.init_t;
                                 ship.x          = c_ship.x;
                                 ship.y          = c_ship.y;
                                 ship.direction  = c_ship.direction;

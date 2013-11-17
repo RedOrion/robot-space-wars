@@ -133,14 +133,13 @@ function Ship(args) {
         var date = new Date();
         var now_t = date.getTime();
         var duration = now_t - this.init_t;
-        var distance = this.speed * duration / 1000;
-        var delta_x = distance * Math.cos(this.direction);
-        var delta_y = distance * Math.sin(this.direction);
-        var new_y = arena.height - (this.y + delta_y);
-
+        var frac = duration / (this.init_t - this.prev_t);
+        var delta_x = (this.x - this.prev_x) * frac;
+        var delta_y = (this.y - this.prev_y) * frac;
+//        console.log('x='+this.x+" y="+this.y+" frac="+frac+' duration='+duration);
         context.save();
-        context.translate(this.x + delta_x, new_y);
-        context.rotate(0 - this.orientation);
+        context.translate(this.prev_x + delta_x, this.prev_y + delta_y);
+        context.rotate(0 + this.orientation);
         context.drawImage(imageObj, -35, -25);
         context.restore();
     }
@@ -161,7 +160,7 @@ function Arena(args) {
         context.beginPath();
         context.fillStyle="#000066";
 
-        for (var i=0; i<self.ships.length; i++) {
+        for (var i in self.ships) {
             self.ships[i].render();
         }
         requestAnimationFrame(self.render);
