@@ -97,6 +97,7 @@
                                     speed       : 0,
                                     rotation    : c_ship.rotation,
                                     orientation : c_ship.orientation,
+                                    prev_orientation : c_ship.orientation,
                                     status      : c_ship.status,
                                     health      : c_ship.health,
                                     init_t      : init_t,
@@ -108,6 +109,7 @@
                                 ship.prev_x     = ship.x;
                                 ship.prev_y     = ship.y;
                                 ship.prev_t     = ship.init_t;
+                                ship.prev_orientation = ship.orientation;
                                 ship.x          = c_ship.x;
                                 ship.y          = c_ship.y;
                                 ship.direction  = c_ship.direction;
